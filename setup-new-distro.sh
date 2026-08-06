@@ -72,6 +72,14 @@ log "Installing Zen Browser"
 mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications"
 curl -fsSL https://github.com/zen-browser/updates-server/raw/refs/heads/main/install.sh | "$SHELL"
 
+# ~/.local/bin only lands on PATH via shell startup files, which already ran
+# before this script created it — so pick it up explicitly for the rest of
+# this script's execution.
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
 if command -v zen >/dev/null 2>&1; then
     STATUS_ZEN="done"
     if [ ! -f "$HOME/.zen/profiles.ini" ]; then
