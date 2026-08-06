@@ -44,9 +44,9 @@ if ! command -v sudo >/dev/null 2>&1; then
 fi
 sudo -v
 
-log "Installing prerequisites (curl, git, openssl, ca-certificates)"
+log "Installing prerequisites (curl, git, openssl, ca-certificates, xz-utils)"
 sudo apt update
-sudo apt install -y curl git openssl ca-certificates
+sudo apt install -y curl git openssl ca-certificates xz-utils
 
 # 2. System update
 log "Updating system packages"
