@@ -67,6 +67,9 @@ STATUS_FIREFOX="done"
 
 # 4. Install Zen Browser
 log "Installing Zen Browser"
+# Zen's installer does `mkdir` (not `mkdir -p`) for ~/.local/bin, which fails
+# on a fresh account where ~/.local doesn't exist yet.
+mkdir -p "$HOME/.local/bin"
 curl -fsSL https://github.com/zen-browser/updates-server/raw/refs/heads/main/install.sh | "$SHELL"
 
 if command -v zen >/dev/null 2>&1; then
