@@ -97,11 +97,26 @@ else
         git clone --depth 1 "$DOTFILES_REPO" "$DOTFILES_CACHE"
     fi
 
-    PROFILE_DIR=$(awk -F= '/^Path=/{print $2; exit}' "$HOME/.zen/profiles.ini")
+    # Prefer the profile marked Default=1; fall back to the last profile
+    # section seen if none is marked default. Also respect IsRelative,
+    # since Path is only relative to ~/.zen when IsRelative=1.
+    PROFILE_INFO=$(awk -F= '
+        /^\[Profile/ { if (def == "1" && path != "") { exit } path=""; isrel="1"; def="0" }
+        /^Path=/     { path=$2 }
+        /^IsRelative=/ { isrel=$2 }
+        /^Default=1/ { def="1" }
+        END { print path "\t" isrel }
+    ' "$HOME/.zen/profiles.ini")
+    PROFILE_DIR="${PROFILE_INFO%%$'\t'*}"
+    PROFILE_ISRELATIVE="${PROFILE_INFO##*$'\t'}"
     if [ -z "$PROFILE_DIR" ]; then
         warn "Could not resolve Zen profile path from profiles.ini — skipping config restore."
     else
-        PROFILE_PATH="$HOME/.zen/$PROFILE_DIR"
+        if [ "$PROFILE_ISRELATIVE" = "0" ]; then
+            PROFILE_PATH="$PROFILE_DIR"
+        else
+            PROFILE_PATH="$HOME/.zen/$PROFILE_DIR"
+        fi
 
         log "Decrypting and applying settings (you'll be prompted for the passphrase unless ZEN_SETTINGS_PASSPHRASE is set)"
         "$DOTFILES_CACHE/decrypt.sh"
